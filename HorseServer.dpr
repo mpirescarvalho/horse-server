@@ -29,7 +29,9 @@ uses
   Controller.Base in 'Controller.Base.pas',
   Controller.Setor in 'Controller.Setor.pas',
   Controller.Marca in 'Controller.Marca.pas',
-  Controller.Estados in 'Controller.Estados.pas';
+  Controller.Estados in 'Controller.Estados.pas',
+  Controller.Database in 'Controller.Database.pas',
+  Controller.Generic in 'Controller.Generic.pas';
 
 var
   App: THorse;
@@ -61,10 +63,15 @@ begin
 //      Result := AUsername.Equals('admin') and APassword.Equals('admin');
 //    end));
 
-    TControllerCidades.Create.Registry(App, Conexao);
-    TControllerEstados.Create.Registry(App, Conexao);
-    TControllerSetor.Create.Registry(App, Conexao);
-    TControllerMarca.Create.Registry(App, Conexao);
+    //Registrar tabelas individuais
+//    TControllerCidades.Create.Registry(App, Conexao);
+//    TControllerEstados.Create.Registry(App, Conexao);
+//    TControllerSetor.Create.Registry(App, Conexao);
+//    TControllerMarca.Create.Registry(App, Conexao);
+
+    //Registrar todas as tabelas to banco
+    TControllerDatabase.Create(App, Conexao).Init;
+
     App.Start;
   except on E: Exception do
     Writeln('Erro: ' + E.message);
