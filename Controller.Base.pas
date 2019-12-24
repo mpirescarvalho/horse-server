@@ -8,9 +8,6 @@ uses
 type
   TControllerBase = class(TInterfacedObject, IController)
   protected
-    function Path: String; virtual;
-    function TableName: String; virtual;
-    function PrimaryKey: String; virtual;
   private
     App: THorse;
     FQuery: TFDQuery;
@@ -25,7 +22,11 @@ type
     procedure Delete(Req: THorseRequest; Res: THorseResponse; ANext: TProc);
   public
     constructor Create;
+    class function New: IController;
     function Registry(App: THorse; FConn: TFDConnection): IController;
+    function Path: String; virtual;
+    function TableName: String; virtual;
+    function PrimaryKey: String; virtual;
   end;
 
 implementation
@@ -104,6 +105,11 @@ end;
 function TControllerBase.Location(Codigo: Integer): String;
 begin
   Result := Format('%s/%d', [Path, Codigo]);
+end;
+
+class function TControllerBase.New: IController;
+begin
+  Result := Self.Create;
 end;
 
 function TControllerBase.Path: String;
@@ -189,15 +195,13 @@ begin
   jsonObj := TJSONObject.ParseJSONValue(TEncoding.ASCII.GetBytes(Req.Body), 0)
     as TJSONObject;
 
-  SQL := Format('UPDATE %s SET', [TableName]);
-
   for I := 0 to Pred(jsonObj.Count) do
     if sCampos <> '' then
       sCampos := Format('%s,%s=%s', [sCampos, jsonObj.Pairs[I].JsonString.Value, jsonObj.Pairs[I].ToString.Split([':'])[1]])
     else
       sCampos := Format('%s=%s', [jsonObj.Pairs[I].JsonString.Value, jsonObj.Pairs[I].ToString.Split([':'])[1]]);
 
-  SQL := Format('%s %s WHERE %s=%s', [SQL, sCampos, PrimaryKey, Req.Params['id']]);
+  SQL := Format('UPDATE %s SET %s WHERE %s=%s', [TableName, sCampos, PrimaryKey, Req.Params['id']]);
 
   FQuery.SQL.Text := SQL.Replace('"', '''');
   FQuery.ExecSQL;

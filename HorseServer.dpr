@@ -6,6 +6,7 @@ program HorseServer;
 
 uses
   System.SysUtils,
+  System.Rtti,
   Horse,
   Controller.Cidades in 'Controller.Cidades.pas',
   Controller.Interfaces in 'Controller.Interfaces.pas',

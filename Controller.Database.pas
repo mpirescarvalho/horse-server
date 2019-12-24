@@ -17,6 +17,7 @@ type
     procedure LoadDatabaseInfo;
     procedure CreateControllers;
     procedure RegistryControllers;
+    function GetController(Tabela, PrimaryKey: string): IController;
   public
     constructor Create(App: THorse; Conexao: TFDConnection);
     procedure Init;
@@ -25,7 +26,7 @@ type
 implementation
 
 uses
-  System.SysUtils, Controller.Generic;
+  System.SysUtils, Controller.Generic, System.Rtti, Controller.Base;
 
 { TControllerDatabase }
 
@@ -45,9 +46,36 @@ begin
     if not DataBaseInfo[Key].Equals('') then
     begin
       Writeln(Format('Iniciando tabela: %s', [Key]));
-      Controllers.Add(TControllerGeneric.Create(Key, DataBaseInfo[Key]));
+      Controllers.Add(GetController(Key, DataBaseInfo[Key]));
     end;
   Writeln(Format('Tabelas iniciadas: %d', [Controllers.Count]));
+end;
+
+function TControllerDatabase.GetController(Tabela,
+  PrimaryKey: string): IController;
+var
+  Contexto: TRttiContext;
+  Tipo: TRttiType;
+  ToPropriedade: TRttiProperty;
+  Controller: IController;
+  Metodo: TRttiMethod;
+begin
+
+  for Tipo in Contexto.GetTypes do
+    if (Tipo.TypeKind = tkClass) 
+    and Tipo.IsInstance 
+    and Tipo.AsInstance.MetaclassType.InheritsFrom(TControllerBase)
+    then
+    begin
+      Metodo := Tipo.AsInstance.GetMethod('New');
+      Controller := Metodo.Invoke(Tipo.AsInstance.MetaclassType,[]).AsInterface as IController;      
+      if (TControllerBase(Controller).TableName = Tabela) and 
+         (TControllerBase(Controller).PrimaryKey = PrimaryKey) then
+        Exit(TInterfacedObject(Controller) as IController);
+    end;
+    
+  Exit(TControllerGeneric.Create(Tabela, PrimaryKey));
+  
 end;
 
 procedure TControllerDatabase.Init;

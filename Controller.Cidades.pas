@@ -32,4 +32,7 @@ begin
   Result := 'CIDADES';
 end;
 
+initialization
+  TControllerCidades.ClassName;
+
 end.

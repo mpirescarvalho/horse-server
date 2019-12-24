@@ -32,4 +32,7 @@ begin
   Result := 'SETOR';
 end;
 
+initialization
+  TControllerSetor.ClassName;
+
 end.

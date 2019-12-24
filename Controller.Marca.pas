@@ -32,4 +32,7 @@ begin
   Result := 'MARCA';
 end;
 
+initialization
+  TControllerMarca.ClassName;
+
 end.

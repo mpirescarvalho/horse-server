@@ -32,4 +32,7 @@ begin
   Result := 'ESTADOS';
 end;
 
+initialization
+  TControllerEstados.ClassName;
+
 end.
