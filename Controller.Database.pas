@@ -10,7 +10,6 @@ type
   TControllerDatabase = class
   private
     App: THorse;
-    Conexao: TFDConnection;
     Controllers: TList<IController>;
     DataBaseInfo: TDictionary<String, String>;
     FQuery: TFDQuery;
@@ -19,22 +18,21 @@ type
     procedure RegistryControllers;
     function GetController(Tabela, PrimaryKey: string): IController;
   public
-    constructor Create(App: THorse; Conexao: TFDConnection);
+    constructor Create(App: THorse);
     procedure Init;
   end;
 
 implementation
 
 uses
-  System.SysUtils, Controller.Generic, System.Rtti, Controller.Base;
+  System.SysUtils, Controller.Generic, System.Rtti, Controller.Base, Utils;
 
 { TControllerDatabase }
 
-constructor TControllerDatabase.Create(App: THorse; Conexao: TFDConnection);
+constructor TControllerDatabase.Create(App: THorse);
 begin
   Controllers := TList<IController>.Create;
   Self.App := App;
-  Self.Conexao := Conexao;
 end;
 
 procedure TControllerDatabase.CreateControllers;
@@ -88,11 +86,13 @@ end;
 procedure TControllerDatabase.LoadDatabaseInfo;
 var
   SQL: String;
+  Conexao: TFDConnection;
 begin
 
   if not Assigned(DataBaseInfo) then
     DataBaseInfo := TDictionary<String, String>.Create;
 
+  Conexao := CreateConexao;
   FQuery := TFDQuery.Create(nil);
   try
 
@@ -118,6 +118,7 @@ begin
 
   finally
     FQuery.Free;
+    Conexao.Free;
   end;
 
 end;
@@ -127,7 +128,7 @@ var
   I: Integer;
 begin
   for I := 0 to Pred(Controllers.Count) do
-    Controllers[I].Registry(App, Conexao);
+    Controllers[I].Registry(App);
 end;
 
 end.

@@ -3,17 +3,20 @@ unit Controller.Cidades;
 interface
 
 uses
-  Controller.Base;
+  Controller.Base, System.JSON;
 
 type
   TControllerCidades = class(TControllerBase)
-  protected
+  public
     function Path: String; override;
     function TableName: String; override;
     function PrimaryKey: String; override;
   end;
 
 implementation
+
+uses
+  Controller.Estados, System.SysUtils;
 
 { TControllerCidades }
 
