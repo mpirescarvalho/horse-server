@@ -8,6 +8,7 @@ uses
 type
   TControllerBase = class(TInterfacedObject, IController)
   protected
+    procedure AdicionarSubQueries(JsonObj: TJSONObject); virtual;
   private
     App: THorse;
     FQuery: TFDQuery;
@@ -41,6 +42,10 @@ uses
   Horse.Jhonson, System.SysUtils, Utils;
 
 { TControllerBase }
+
+procedure TControllerBase.AdicionarSubQueries(JsonObj: TJSONObject);
+begin
+end;
 
 constructor TControllerBase.Create;
 begin
@@ -108,7 +113,10 @@ var
 begin
   JsonArray := Query(Format('%s=%s', [PrimaryKey, Req.Params['id']]), GetSelectFields(Req));
   if Assigned(JsonArray) then
-    Res.Send<TJSONObject>(JsonArray.Items[0] as TJSONObject)
+  begin
+    AdicionarSubQueries(JsonArray.Items[0] as TJSONObject);
+    Res.Send<TJSONObject>(JsonArray.Items[0] as TJSONObject);
+  end
   else
     Res.Status(404);
 end;
