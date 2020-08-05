@@ -30,9 +30,9 @@ begin
   Conexao := TFDConnection.Create(nil);
   Conexao.Params.Add('Server=127.0.0.1');
   Conexao.Params.Add('Port=3050');
-  Conexao.Params.Add('Database=C:\PCMaster\CadizERP\Dados\CADIZERP_LIMPO_TESTE_UTF8.FDB');
+  Conexao.Params.Add('Database=C:\PCMaster\HorseBackend\Dados\banco.FDB');
   Conexao.Params.Add('User_Name=sysdba');
-  Conexao.Params.Add('Password=masterkey');
+  Conexao.Params.Add('Password=managerx');
   Conexao.Params.Add('DriverID=FB');
   Conexao.Params.Add('Pooled=False');
   Conexao.Params.Add('CharacterSet=UTF8');

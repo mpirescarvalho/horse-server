@@ -16,6 +16,8 @@ type
     function GeneratorValue: Integer;
     function GetJSONArray(JSONString: String): TJSONArray;
     function GetSelectFields(Req: THorseRequest): String;
+    function GetPage(Req: THorseRequest): Integer;
+    function GetPageSize(Req: THorseRequest): Integer;
     //Http methods
     procedure Get(Req: THorseRequest; Res: THorseResponse; ANext: TProc);
     procedure GetOne(Req: THorseRequest; Res: THorseResponse; ANext: TProc);
@@ -29,7 +31,7 @@ type
     function Path: String; virtual;
     function TableName: String; virtual;
     function PrimaryKey: String; virtual;
-    function Query(Where: String = ''; Fields: String = ''): TJSONArray;
+    function Query(Where: String = ''; Fields: String = ''; Page: Integer = 0; PageSize: Integer = 20): TJSONArray;
   end;
 
 implementation
@@ -88,7 +90,7 @@ procedure TControllerBase.Get(Req: THorseRequest; Res: THorseResponse;
 var
   JsonArray: TJSONArray;
 begin
-  JsonArray := Query('', GetSelectFields(Req));
+  JsonArray := Query('', GetSelectFields(Req), GetPage(Req), GetPageSize(Req));
   if Assigned(JsonArray) then
     Res.Send<TJSONArray>(JsonArray)
   else
@@ -119,6 +121,26 @@ begin
   end
   else
     Res.Status(404);
+end;
+
+function TControllerBase.GetPage(Req: THorseRequest): Integer;
+var
+  sPage: String;
+begin
+  if Req.Query.TryGetValue('page', sPage) then
+    Result := StrToInt(sPage)
+  else
+    Result := 0;
+end;
+
+function TControllerBase.GetPageSize(Req: THorseRequest): Integer;
+var
+  sPageSize: String;
+begin
+  if Req.Query.TryGetValue('page_size', sPageSize) then
+    Result := StrToInt(sPageSize)
+  else
+    Result := 20;
 end;
 
 function TControllerBase.GetSelectFields(Req: THorseRequest): String;
@@ -257,20 +279,37 @@ begin
   end;
 end;
 
-function TControllerBase.Query(Where, Fields: String): TJSONArray;
+function TControllerBase.Query(Where, Fields: String; Page, PageSize: Integer): TJSONArray;
 var
   Conexao: TFDConnection;
+  Sql: String;
+  WhereSql: String;
+  PaginationSql: String;
 begin
   Conexao := CreateConexao;
   try
     FQuery.Connection := Conexao;
+
     if Fields = '' then
       Fields := '*';
-    if Where = '' then
-      FQuery.Open(Format('SELECT %s FROM %s', [Fields, TableName]))
+
+    WhereSql := '';
+    if Where <> '' then
+      WhereSql := Format('WHERE %s', [Where]);
+
+    PaginationSql := '';
+    if Page > 0 then
+      PaginationSql := Format('FIRST %d SKIP %d', [PageSize, (Page - 1) * PageSize]);
+
+    Sql := Format('SELECT %s %s FROM %s %s', [PaginationSql, Fields, TableName, WhereSql]);
+
+    FQuery.Open(Sql);
+
+    if FQuery.RecordCount > 0 then
+      Result := FQuery.AsJSONArray
     else
-      FQuery.Open(Format('SELECT %s FROM %s WHERE %s', [Fields, TableName, Where]));
-    Result := FQuery.AsJSONArray;
+      Result := TJSONArray.Create;
+
   finally
     FreeAndNil(Conexao);
   end;

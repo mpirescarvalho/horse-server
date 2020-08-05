@@ -30,6 +30,9 @@ begin
     TControllerDatabase.Create(App).Init;
     App.Start;
   except on E: Exception do
-    Writeln('Erro: ' + E.message);
+    begin
+      Writeln('Erro: ' + E.message);
+      Readln;
+    end;
   end;
 end.
