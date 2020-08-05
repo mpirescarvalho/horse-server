@@ -31,6 +31,7 @@ type
     function Path: String; virtual;
     function TableName: String; virtual;
     function PrimaryKey: String; virtual;
+    function View: String; virtual;
     function Query(Where: String = ''; Fields: String = ''; Page: Integer = 0; PageSize: Integer = 20): TJSONArray;
   end;
 
@@ -301,7 +302,7 @@ begin
     if Page > 0 then
       PaginationSql := Format('FIRST %d SKIP %d', [PageSize, (Page - 1) * PageSize]);
 
-    Sql := Format('SELECT %s %s FROM %s %s', [PaginationSql, Fields, TableName, WhereSql]);
+    Sql := Format('SELECT %s %s FROM %s %s', [PaginationSql, Fields, View, WhereSql]);
 
     FQuery.Open(Sql);
 
@@ -329,6 +330,11 @@ end;
 function TControllerBase.TableName: String;
 begin
   Result := '';
+end;
+
+function TControllerBase.View: String;
+begin
+  Result := TableName;
 end;
 
 end.
